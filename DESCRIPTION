@@ -1,0 +1,14 @@
+Package: cfmR
+Type: Package
+Title: R Wrapper for calling the Competitive Fragmentation Modeling for Metabolite Identifiction (CFM-ID) algorithm. 
+Version: 0.1.0
+Author: Gordon Getzinger
+Maintainer: Gordon Getzinger <gordon.getzinger@duke.edu>
+Description: R functions for passing arguments to the CFM-ID command line tool 
+    and for collecting results from output file or standard out. Also, provides 
+    functions for submitting batches of molecules for prediction using a 
+    Linux cluster with a SLURM scheduler. 
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.2
