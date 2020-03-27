@@ -7,7 +7,10 @@ Maintainer: Gordon Getzinger <gordon.getzinger@duke.edu>
 Description: R functions for passing arguments to the CFM-ID command line tool 
     and for collecting results from output file or standard out. Also, provides 
     functions for submitting batches of molecules for prediction using a 
-    Linux cluster with a SLURM scheduler. 
+    Linux cluster with a SLURM scheduler. This package was not written 
+    by the CMF-ID authors. For instructions on installation of 
+    command line executables and a description of the alrogithm
+    , see https://cfmid.wishartlab.com and https://sourceforge.net/projects/cfm-id. 
 License: GPL-2
 Encoding: UTF-8
 LazyData: true

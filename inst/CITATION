@@ -1,0 +1,16 @@
+citHeader("To cite cfmR in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "CFM-ID: a web server for annotation, spectrum prediction and metabolite identification from tandem mass spectra",
+  author   = "Felicity Allen, Allison Pon, Michael Wilson, Russ Greiner, David Wishart",
+  journal  = "Nucleic Acids Research",
+  year     = "2014",
+  volume   = "42",
+  number   = "1",
+  pages    = "94-99",
+  url      = "https://doi.org/10.1093/nar/gku436",
+  textVersion = paste(
+
+  )
+)
