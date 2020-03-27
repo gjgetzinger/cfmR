@@ -26,8 +26,6 @@
 #' @param output_filename The filename of the output file to write to (if not
 #'   given, prints to stdout)
 #'
-#' @return
-#' @export
 #'
 cfm_id_precomputed <-
   function(spectrum_file,

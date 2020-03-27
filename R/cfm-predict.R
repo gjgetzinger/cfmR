@@ -73,7 +73,7 @@ cfm_predict_stdout <- function(rst){
   spec <- rst[1:(rst_break-1)]
   spec_f <- cumsum(as.numeric(grepl('energy', spec)))
   spec_breaks <- !grepl('energy', spec) & spec != ""
-  spec_split <- setNames(
+  spec_split <- stats::setNames(
     split(spec[spec_breaks], spec_f[spec_breaks]),
     spec[grepl('energy', spec)])
 
@@ -114,14 +114,14 @@ cfm_predict_stdout <- function(rst){
 
 #' Read cfm_predict results from output_filename
 #'
-#' @param output_filename
+#' @param output_filename A text file containing the output from cfm_predict.
 #'
 #' @return List containing predicted spectra (and annotations, if present)
 #' @export
 #'
 cfm_predict_readfile <- function(output_filename) {
   rst <-
-    read.delim(
+    utils::read.delim(
       file = output_filename,
       header = F,
       check.names = F,
@@ -157,8 +157,6 @@ cfm_predict_readfile <- function(output_filename) {
 #' @param include_annotations Whether to include fragment information in the
 #'   output spectra (0 = NO (default), 1 = YES ). Note: ignored for msp/mgf
 #'   output.
-#' @param output_filename The filename of the output spectra file to write to
-#'   (if not given, returns list from stdout).
 #' @param apply_post_processing Whether or not to post-process predicted spectra
 #'   to take the top 80% of energy (at least 5 peaks), or the highest 30 peaks
 #'   (whichever comes first) (0 = OFF, 1 = ON (default) ).

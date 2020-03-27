@@ -49,9 +49,6 @@ Options: Jaccard (default), DotProduct}
 \item{output_filename}{The filename of the output file to write to (if not
 given, prints to stdout)}
 }
-\value{
-
-}
 \description{
 CFM-ID Precomupted
 }

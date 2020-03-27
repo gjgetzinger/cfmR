@@ -56,9 +56,6 @@ how many processes are run in parallel per node.}
 over. slurm_apply automatically divides params in chunks of approximately
 equal size to send to each node. Less nodes are allocated if the parameter
 set is too small to use all CPUs on the requested nodes.}
-
-\item{output_filename}{The filename of the output spectra file to write to
-(if not given, returns list from stdout).}
 }
 \value{
 A slurm_job object containing the jobname and the number of nodes

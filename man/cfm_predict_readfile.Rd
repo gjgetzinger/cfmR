@@ -7,7 +7,7 @@
 cfm_predict_readfile(output_filename)
 }
 \arguments{
-\item{output_filename}{}
+\item{output_filename}{A text file containing the output from cfm_predict.}
 }
 \value{
 List containing predicted spectra (and annotations, if present)
