@@ -226,9 +226,9 @@ cfm_read_batch <-
            table_name = NULL,
            output_path = NULL) {
     stopifnot(exprs = {
-      is.null(out_dir)
-      is.null(table_name)
-      is.null(output_path)
+      !is.null(out_dir)
+      !is.null(table_name)
+      !is.null(output_path)
     })
     tmp <-
       dplyr::tibble(filename = fs::dir_ls(out_dir, glob = '*.txt')) %>%
@@ -244,3 +244,4 @@ cfm_read_batch <-
       return(tmp)
     }
   }
+

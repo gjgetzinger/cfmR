@@ -17,3 +17,5 @@ LazyData: true
 RoxygenNote: 7.0.2
 Suggests:
   rslurm
+Imports: 
+    magrittr
