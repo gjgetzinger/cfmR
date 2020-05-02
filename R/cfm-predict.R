@@ -61,76 +61,6 @@ cfm_predict <-
      }
   }
 
-#' Read cfm-predict standard output into R object
-#'
-#' @param rst Standard out from a completed system2 call to cfm-predict
-#'
-#' @return List containing predicted spectra (and annotations, if present)
-#' @export
-#'
-cfm_predict_stdout <- function(rst){
-  rst_break <- which(sapply(rst, nchar) == 0)
-  spec <- rst[1:(rst_break-1)]
-  spec_f <- cumsum(as.numeric(grepl('energy', spec)))
-  spec_breaks <- !grepl('energy', spec) & spec != ""
-  spec_split <- stats::setNames(
-    split(spec[spec_breaks], spec_f[spec_breaks]),
-    spec[grepl('energy', spec)])
-
-  spec_out <- lapply(spec_split, function(x){
-    do.call('rbind', lapply(x, function(xx) {
-      y <- strsplit(xx, ' ')
-      data.frame(matrix(
-        c(y[[1]][1:2]),
-        ncol = 2,
-        byrow = T,
-        dimnames = list(c(), c('mz', 'int'))
-      ),
-      stringsAsFactors = F)
-    }))
-  })
-
-  if (rst_break == length(rst)) {
-    out <- spec_out
-  } else {
-    spec_ann <- lapply(spec_split, function(x) {
-      sapply(strsplit(x, ' '), function(xx) {
-        paste0(xx[3:length(xx)], collapse = ' ')
-      })
-    })
-    annotation <-
-      data.frame(matrix(do.call('rbind', strsplit(rst[(rst_break + 1):length(rst)], ' ')),
-             ncol = 3,
-             dimnames = list(c(), c('idx', 'mz', 'smiles'))), stringsAsFactors = F)
-    out <-
-      list(
-        spec = spec_out,
-        spec_ann = spec_ann,
-        annotation = annotation
-      )
-  }
-  return(out)
-}
-
-#' Read cfm_predict results from output_filename
-#'
-#' @param output_filename A text file containing the output from cfm_predict.
-#'
-#' @return List containing predicted spectra (and annotations, if present)
-#' @export
-#'
-cfm_predict_readfile <- function(output_filename) {
-  rst <-
-    utils::read.delim(
-      file = output_filename,
-      header = F,
-      check.names = F,
-      stringsAsFactors = F
-    )[, 1]
-  rst <- append(rst, "", after = which(grepl('^0', rst)) - 1)
-  cfm_predict_stdout(rst = rst)
-}
-
 #' Batch CFM prediction using a Linux cluster with a SLURM scheduler
 #'
 #' @param id A molecule identifier. Used for the filename of the cfm-predict
@@ -210,7 +140,3 @@ cfm_predict_batch <-
     )
     return(sjob)
   }
-
-
-
-

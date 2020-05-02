@@ -16,7 +16,7 @@ cfm_parse_spec <- function(spec, return_annotation = T){
 }
 
 #' Parse CFM precomputed spectra stored as raw vectors/binary blobs
-#'
+#' @inheritParams cfm_parse_spec
 #' @describeIn cfm_parse Parse CFM prec-compute data stored as binary blob
 #' @export
 cfm_parse_spec.raw <- function(spec, return_annotation = T){
@@ -86,9 +86,7 @@ cfm_parse_spec.raw <- function(spec, return_annotation = T){
       dplyr::mutate(intensity = mean(c(energy0, energy1, energy2), na.rm = T)) %>%
       dplyr::ungroup() %>%
       dplyr::transmute(mz, intensity)
-
-    new("Spectrum2", mz = b$mz, intensity = b$intensity)
+    methods::new("Spectrum2", mz = b$mz, intensity = b$intensity)
   }
-
 }
 

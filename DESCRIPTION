@@ -19,4 +19,16 @@ Suggests:
   rslurm
 Imports: 
     magrittr, 
-    MSnbase
+    MSnbase, 
+    DBI,
+    RSQLite, 
+    blob, 
+    dplyr, 
+    fs, 
+    methods, 
+    plyr, 
+    purrr, 
+    rlang, 
+    stringr, 
+    tibble, 
+    tidyr

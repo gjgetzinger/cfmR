@@ -21,7 +21,7 @@ cfm_read_db(
 \item{return_annotation}{[logical] Should spectra be returned with annotations}
 }
 \value{
-
+A named list of spectra
 }
 \description{
 Read CFM precomputed spectra from a database created by cfm_read_batch

@@ -15,7 +15,7 @@ cfm_read_batch(out_dir = NULL, table_name = NULL, output_path = NULL)
 \item{output_path}{A path to a SQLite database file for writing the results}
 }
 \value{
-
+Writes table to sql lite database file designated by output_path
 }
 \description{
 Read results of batch CFM prediction

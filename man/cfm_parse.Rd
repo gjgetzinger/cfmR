@@ -6,6 +6,11 @@
 \usage{
 \method{cfm_parse_spec}{raw}(spec, return_annotation = T)
 }
+\arguments{
+\item{spec}{Result from CFM precompute}
+
+\item{return_annotation}{T/F should annotation be returned}
+}
 \description{
 Parse CFM precomputed spectra stored as raw vectors/binary blobs
 }
