@@ -110,7 +110,8 @@ cfm_read_batch <-
 #' @param ID [string] A vector of ID(s) to retrieve from the database
 #' @param return_annotation [logical] Should spectra be returned with annotations
 #'
-#' @return A named list of spectra
+#' @return A named list of spectra when selected table contains a column named
+#'   'spectrum'. Otherwise a tibble.
 #' @export
 #'
 cfm_read_db <-
@@ -119,33 +120,45 @@ cfm_read_db <-
            ID = NULL,
            return_annotation = F) {
     db_file <- normalizePath(db_file, mustWork = T)
-    stopifnot(!is.null(table_name), !is.null(ID))
+    stopifnot(!is.null(table_name))
     conn <- DBI::dbConnect(RSQLite::SQLite(), db_file)
     on.exit(DBI::dbDisconnect(conn))
     stopifnot(table_name %in% DBI::dbListTables(conn))
-    stopifnot(
-      dplyr::tbl(conn, table_name) %>%
-        dplyr::filter(ID %in% !!ID) %>%
-        dplyr::count() %>%
-        dplyr::pull() >= 1
-    )
-
-    if(is.null(ID)){
+    if (!is.null(ID)) {
+      stopifnot(
+        dplyr::tbl(conn, table_name) %>%
+          dplyr::filter(ID %in% !!ID) %>%
+          dplyr::count() %>%
+          dplyr::pull() >= 1
+      )
       a <- dplyr::tbl(conn, table_name) %>%
+        dplyr::filter(ID %in% !!ID) %>%
         dplyr::as_tibble()
     } else {
       a <- dplyr::tbl(conn, table_name) %>%
-        dplyr::filter(ID %in% !!ID) %>%
         dplyr::as_tibble()
     }
 
-
-    rlang::set_names(
-      purrr::map(
+    if ('spectrum' %in% colnames(a)) {
+      cat("Reading",
+          nrow(a),
+          "predicted spectra from",
+          table_name,
+          "in",
+          basename(db_file))
+      future::plan(future::multiprocess)
+      b <- furrr::future_map(
         .x = a$spectrum,
         .f = cfm_parse_spec,
-        return_annotation = return_annotation
-      ),
-      a$ID
-    )
+        return_annotation = return_annotation,
+        .progress = T
+      )
+      future::plan(future::multiprocess)
+      out <- rlang::set_names(b, a$ID)
+
+    } else {
+      out <- a
+    }
+    return(out)
   }
+
