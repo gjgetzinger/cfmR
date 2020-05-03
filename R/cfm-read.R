@@ -146,16 +146,14 @@ cfm_read_db <-
           table_name,
           "in",
           basename(db_file))
-      future::plan(future::multiprocess)
+      future::plan(list(future::cluster, future::multiprocess))
       b <- furrr::future_map(
         .x = a$spectrum,
         .f = cfm_parse_spec,
         return_annotation = return_annotation,
         .progress = T
       )
-      future::plan(future::multiprocess)
       out <- rlang::set_names(b, a$ID)
-
     } else {
       out <- a
     }

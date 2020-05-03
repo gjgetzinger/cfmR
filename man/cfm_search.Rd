@@ -7,10 +7,14 @@
 cfm_search(
   query_spectrum,
   db_file = NULL,
-  table_name = NULL,
+  spec_table_name = NULL,
+  mol_table_name = NULL,
+  molprop_table_name = NULL,
   ID = NULL,
   fun = c("common", "cor", "dotproduct"),
-  bin = 1
+  bin = 1,
+  pol = c("negative", "positive"),
+  ppm = 10
 )
 }
 \arguments{
@@ -19,7 +23,11 @@ library}
 
 \item{db_file}{A database file containing the CFM precomputed spectra}
 
-\item{table_name}{The name of the table containing the precomputed spectra}
+\item{spec_table_name}{The name of the table containing the precomputed spectra}
+
+\item{mol_table_name}{The name of the table containing molecules}
+
+\item{molprop_table_name}{The name of the table continaing molecular properties}
 
 \item{ID}{Values to filter by. Corresponds to the ID column in the table. If
 NULL than all spectra from the library are compared.}
@@ -29,6 +37,10 @@ dotproduct). See MSnbase::compareSpectra.}
 
 \item{bin}{Bin size for peak patching. See MSnbase::compareSpectra for
 details.}
+
+\item{pol}{Polarity (positive or negative)}
+
+\item{ppm}{Mass error for filtering molecules by neutral mass}
 }
 \value{
 A tibble with variables ID, %fun_similarity

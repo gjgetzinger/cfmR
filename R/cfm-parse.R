@@ -20,6 +20,7 @@ cfm_parse_spec <- function(spec, return_annotation = T){
 #' @describeIn cfm_parse Parse CFM prec-compute data stored as binary blob
 #' @export
 cfm_parse_spec.raw <- function(spec, return_annotation = T){
+
   a <- unlist(spec) %>%
     rawToChar() %>%
     strsplit("\n") %>%
