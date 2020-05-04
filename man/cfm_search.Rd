@@ -6,6 +6,7 @@
 \usage{
 cfm_search(
   query_spectrum,
+  mol_form = NULL,
   db_file = NULL,
   spec_table_name = NULL,
   mol_table_name = NULL,
@@ -14,12 +15,15 @@ cfm_search(
   fun = c("common", "cor", "dotproduct"),
   bin = 1,
   pol = c("negative", "positive"),
-  ppm = 10
+  ppm = 10,
+  excl_precur = F
 )
 }
 \arguments{
 \item{query_spectrum}{An MSnbase::Spectrum2 object to search against the
 library}
+
+\item{mol_form}{The molecular formula assigned to the query spectrum.}
 
 \item{db_file}{A database file containing the CFM precomputed spectra}
 
@@ -41,6 +45,8 @@ details.}
 \item{pol}{Polarity (positive or negative)}
 
 \item{ppm}{Mass error for filtering molecules by neutral mass}
+
+\item{excl_precur}{Should precursor ion from query spectrum be excluded. (T/F)}
 }
 \value{
 A tibble with variables ID, %fun_similarity
