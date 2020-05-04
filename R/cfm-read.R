@@ -125,34 +125,25 @@ cfm_read_db <-
     on.exit(DBI::dbDisconnect(conn))
     stopifnot(table_name %in% DBI::dbListTables(conn))
     if (!is.null(ID)) {
-      stopifnot(
-        dplyr::tbl(conn, table_name) %>%
-          dplyr::filter(ID %in% !!ID) %>%
-          dplyr::count() %>%
-          dplyr::pull() >= 1
-      )
-      a <- dplyr::tbl(conn, table_name) %>%
-        dplyr::filter(ID %in% !!ID) %>%
-        dplyr::as_tibble()
+      id_match <- dplyr::tbl(conn, table_name) %>%
+          dplyr::filter(ID %in% !!ID)
+
+      if(dplyr::count(id_match) %>% dplyr::pull() == 0){
+        cat("No predicted spectra found for ID(s):\n", ID)
+        return(NULL)
+      }
+      a <- dplyr::as_tibble(id_match)
     } else {
       a <- dplyr::tbl(conn, table_name) %>%
         dplyr::as_tibble()
     }
 
     if ('spectrum' %in% colnames(a)) {
-      cat("Reading",
-          nrow(a),
-          "predicted spectra from",
-          table_name,
-          "in",
-          basename(db_file))
-      future::plan(list(future::cluster, future::multiprocess))
-      b <- furrr::future_map(
-        .x = a$spectrum,
-        .f = cfm_parse_spec,
-        return_annotation = return_annotation,
-        .progress = T
-      )
+      b <- purrr::map(
+        a$spectrum,
+        cfm_parse_spec,
+        return_annotation = return_annotation
+        )
       out <- rlang::set_names(b, a$ID)
     } else {
       out <- a

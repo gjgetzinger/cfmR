@@ -16,11 +16,13 @@
 #' @param ppm Mass error for filtering molecules by neutral mass
 #' @param excl_precur Should precursor ion from query spectrum be excluded. (T/F)
 #' @param mol_form The molecular formula assigned to the query spectrum.
+#' @param exact_mass The neutral exact mass of the query spectrum
 #'
 #' @return A tibble with variables ID, %fun_similarity
 #' @export
 #'
 cfm_search <- function(query_spectrum,
+                       exact_mass = NULL,
                        mol_form = NULL,
                        db_file = NULL,
                        spec_table_name = NULL,
@@ -33,6 +35,14 @@ cfm_search <- function(query_spectrum,
                        ppm = 10,
                        excl_precur = F
                        ) {
+  msg <- ' Running cfmR spectrum query '
+  cat('\n',
+      rep('=', (options()$width - nchar(msg)) / 2),
+      msg,
+      rep('=', (options()$width - nchar(msg)) / 2),
+      '\n',
+      fill = FALSE,
+      sep = '')
   stopifnot(class(query_spectrum) == 'Spectrum2')
   pol <- match.arg(pol, several.ok = F)
   fun <- match.arg(fun, several.ok = F)
@@ -49,52 +59,67 @@ cfm_search <- function(query_spectrum,
   if(is.null(ID)){
     # get IDs within by precur mz
     if(!is.null(mol_form)){ # prefer formula query to mass search
-      if(grepl('+', mol_form)){
-        alt_molform <- cdutils::clean_form(molform = mol_form, as_cts = T)
-        alt_molform['H'] <- alt_molform['H'] - 1
-        alt_molform[alt_molform == 1] <- ""
-        alt_molform <- paste0(names(alt_molform), alt_molform, collapse = '')
-        mol_form <- append(mol_form, alt_molform)
+      cat("Query by molecular formula:", mol_form, '\n')
+      mol_form <- alt_molform(mol_form)
+      if(mol_form %in% mol_props$MolForm){
+        mol_props <- dplyr::filter(mol_props, MolForm %in% mol_form)
+        cat(nrow(mol_props), 'molecular formula matches retrieved')
+      }
+    } else {
+      # get the neutral mass
+      if(is.null(exact_mass)){
+        #if exact mass not provided calculate one from the precursor m/z
+        # using multiple possible adduts based on charge and polarity
+        exact_mass <- dplyr::filter(
+          adducts,
+          charge == switch(pol, negative = -1, positive = 1)*query_spectrum@precursorCharge
+        ) %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(
+            neu_mass = (query_spectrum@precursorMz + charge*mass)*mult
+          ) %>%
+          dplyr::ungroup() %>%
+          dplyr::transmute(adduct, mass = neu_mass)
+        cat(
+          "Query by exact mass:\n",
+          "\nCaculated based on precursor m/z:",
+          query_spectrum@precursorMz,
+          '\n\n',
+          paste0(apply(exact_mass, 1, paste, collapse = ' '), collapse = '\n'),
+          '\n'
+        )
+        exact_mass <- dplyr::pull(exact_mass, mass)
+      } else {
+        cat("Query by exact mass:", exact_mass, '\n')
       }
 
-     mol_props <- mol_props %>%
-        filter(MolForm %in% mol_form)
+      # calculate ppm error and filter
+      ppm_error <- purrr::map_dbl(
+        mol_props$ExactMass,
+        .f = function(x) {
+          min(abs(1e6 * ((exact_mass - x) / x)), na.rm = T)
+          }
+        )
 
-    } else {
-      neutral_mass <- dplyr::filter(
-        adducts,
-        charge == switch(pol, negative = -1, positive = 1)*query_spectrum@precursorCharge
-      ) %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate(
-          neu_mass = (query_spectrum@precursorMz + charge*mass)*mult
-        ) %>%
-        dplyr::ungroup() %>%
-        dplyr::transmute(adduct, mass = neu_mass)
-
-      mol_props <- dplyr::filter(mol_props,
-                                 purrr::map_lgl(
-                                   mol_props$ExactMass,
-                                   .f = function(x) {
-                                     any(abs(1e6 * ((
-                                       neutral_mass$mass - x
-                                     ) / x)) < ppm / 2)
-                                   }
-                                 ))
+      mol_props <- dplyr::filter(mol_props, ppm_error < (ppm / 2))
     }
 
     if(nrow(mol_props) == 0){
-      message('No molecules matched')
+      message('No molecules matched\n')
       return(NULL)
+    } else{
+      cat(nrow(mol_props), 'possible structures retrieved\n')
     }
     ## filter mols
     mol_dat <- dplyr::left_join(mol_props, mols, by = 'ID')
     ID <- dplyr::pull(mol_dat, ID)
   } else {
+    cat("Retrieving molecular data for ID(s):\n", ID)
     mol_dat <- dplyr::left_join(mol_props, mols, by = 'ID')
   }
 
   # retrieve spectra by ID
+  cat("Reading", length(ID),"predicted spectra from",spec_table_name,"in",basename(db_file), '\n')
   s2 <-
     cfm_read_db(
       db_file = db_file,
@@ -102,18 +127,26 @@ cfm_search <- function(query_spectrum,
       ID = ID,
       return_annotation = F
     )
-  stopifnot(length(s2) > 0)
+  if (length(s2) == 0) {
+    return(NULL)
+  }
 
   # get spec similarity
+  cat("Calculating spectral similarity using: \nfunction=", fun, "\nbin=", bin, '\n')
   sim_score <- purrr::map_dbl(
     s2,
     .f = function(x){
       if(excl_precur){
         MSnbase::compareSpectra(
-          object1 = filterMz(query_spectrum, c(min(mz(query_spectrum)), query_spectrum@precursorMz - bin)),
-          object2 = filterMz(x, c(min(mz(x)), query_spectrum@precursorMz - bin)),
+          object1 = MSnbase::filterMz(query_spectrum, c(
+            min(MSnbase::mz(query_spectrum)), query_spectrum@precursorMz - bin
+          )),
+          object2 = MSnbase::filterMz(x, c(
+            min(MSnbase::mz(x)), query_spectrum@precursorMz - bin
+          )),
           fun = fun,
-          bin = bin)
+          bin = bin
+        )
       } else {
         MSnbase::compareSpectra(
           object1 = query_spectrum,
@@ -124,15 +157,16 @@ cfm_search <- function(query_spectrum,
     }
   ) %>%
     tibble::enframe(name = 'ID') %>%
-    dplyr::arrange(desc(value)) %>%
+    dplyr::arrange(dplyr::desc(value)) %>%
     plyr::rename(c("value" = paste0(fun, '_similarity')))
 
   # return similarity merged with molecular data
   rst <- dplyr::left_join(mol_dat, sim_score, by = 'ID') %>%
-    dplyr::arrange_at(.vars = dplyr::vars(dplyr::ends_with("_similarity")), .funs = desc) %>%
+    dplyr::arrange_at(.vars = dplyr::vars(dplyr::ends_with("_similarity")), .funs = dplyr::desc) %>%
     dplyr::left_join(y = tibble::enframe(s2, name = 'ID', value = 'predicted_spectrum'),
                      by = 'ID') %>%
     dplyr::select(ID, predicted_spectrum, dplyr::ends_with('_similarity'), dplyr::everything())
+  cat(rep('=',options()$width), '\n', fill = FALSE, sep = '')
   return(rst)
 }
 

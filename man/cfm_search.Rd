@@ -6,6 +6,7 @@
 \usage{
 cfm_search(
   query_spectrum,
+  exact_mass = NULL,
   mol_form = NULL,
   db_file = NULL,
   spec_table_name = NULL,
@@ -22,6 +23,8 @@ cfm_search(
 \arguments{
 \item{query_spectrum}{An MSnbase::Spectrum2 object to search against the
 library}
+
+\item{exact_mass}{The neutral exact mass of the query spectrum}
 
 \item{mol_form}{The molecular formula assigned to the query spectrum.}
 
