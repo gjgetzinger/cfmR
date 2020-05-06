@@ -65,7 +65,7 @@ globalVariables(
 #' clean_form("C15H17BrN3+", as_cts = TRUE)
 #' @export
 clean_form <- function(molform, withspace = FALSE, as_cts = FALSE) {
-  elem <- stringr::str_extract_all(molform, '[:letter:]{1,2}')[[1]]
+  elem <- stringr::str_extract_all(molform, '[:upper:]{1}[:lower:]{0,1}')[[1]]
   mf <- sapply(elem, function(e){
     stringr::str_extract(molform, pattern = paste0('(?<=',e, ')[0-9]{1,4}')) %>%
       ifelse(is.na(.), 1, .) %>%
