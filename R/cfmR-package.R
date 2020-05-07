@@ -48,7 +48,8 @@ globalVariables(
     "mass",
     "mult",
     "neu_mass",
-    "MolForm"
+    "MolForm",
+    "make_mzvault"
   )
 )
 
