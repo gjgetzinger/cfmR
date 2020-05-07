@@ -15,6 +15,7 @@ License: GPL-2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
+SystemRequirements: python
 Depends: R (>= 2.10)
 Suggests:
   rslurm
