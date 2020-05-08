@@ -136,18 +136,20 @@ def make_mzvault(input_db, mol_tab, mol_idx, identifier_tab, cfmpred_pos, cfmpre
         formula = Chem.rdMolDescriptors.CalcMolFormula(mol)   
         molblock = Chem.rdmolfiles.MolToMolBlock(mol)
         inchikey = Chem.MolToInchiKey(mol)
+        name = x
         if identifiers is not None:
-            name_col = [x for x in identifiers.columns.values if re.search('name',x,re.I)][0]
+            #name_col = [x for x in identifiers.columns.values if re.search('name',x,re.I)][0]
             inchikey_col = [x for x in identifiers.columns.values if re.search('^inchikey',x,re.I)][0]
             inchi_col = [x for x in identifiers.columns.values if re.search('inchi(?!key)',x,re.I)][0]
             casrn_col = [x for x in identifiers.columns.values if re.search('casrn',x,re.I)][0]
-            synonym_col = [x for x in identifiers.columns.values if x not in [name_col,inchikey_col,casrn_col,inchi_col]]
-            try:
-                name = identifiers[identifiers[inchikey_col] == inchikey][name_col]
-                name = ','.join([x for x in name.values.tolist()])
-            except IndexError:
-                name = " "
-        
+            #synonym_col = [x for x in identifiers.columns.values if x not in [name_col,inchikey_col,casrn_col,inchi_col]]
+            synonym_col = [x for x in identifiers.columns.values if x not in [inchikey_col,casrn_col,inchi_col]]
+            
+            # try:
+            #     name = identifiers[identifiers[inchikey_col] == inchikey][name_col]
+            #     name = ','.join([x for x in name.values.tolist()])
+            # except IndexError:
+            #     name = " "
             try:
                 casrn = identifiers[identifiers[inchikey_col] == inchikey][casrn_col]
                 casrn = ','.join([x for x in casrn.values.tolist()])
@@ -160,7 +162,7 @@ def make_mzvault(input_db, mol_tab, mol_idx, identifier_tab, cfmpred_pos, cfmpre
             except IndexError:
                 synonyms = " "
         else:
-            name = " "
+            #name = " "
             casrn = " "
             synonyms = " "
             
